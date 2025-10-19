@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}All Posts{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  <!-- Tabs -->
+  <div class="flex gap-2">
+    <a href="?tab=publish&limit={{limit}}&offset=0"
+       class="px-3 py-2 rounded-2xl text-sm font-medium transition
+       {% if tab == 'publish' %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-900 border border-gray-300{% endif %}">
+      Published
+    </a>
+    <a href="?tab=draft&limit={{limit}}&offset=0"
+       class="px-3 py-2 rounded-2xl text-sm font-medium transition
+       {% if tab == 'draft' %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-900 border border-gray-300{% endif %}">
+      Drafts
+    </a>
+    <a href="?tab=trash&limit={{limit}}&offset=0"
+       class="px-3 py-2 rounded-2xl text-sm font-medium transition
+       {% if tab == 'trash' %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-900 border border-gray-300{% endif %}">
+      Trashed
+    </a>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow p-4">
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="text-left text-gray-500">
+            <th class="py-2">Title</th>
+            <th class="py-2">Category</th>
+            <th class="py-2">Status</th>
+            <th class="py-2 w-32">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in rows %}
+          <tr class="border-t">
+            <td class="py-3 font-medium">{{ p.title }}</td>
+            <td class="py-3">{{ p.category }}</td>
+            <td class="py-3">
+              {% if p.status == 'publish' %}
+                <span class="px-2 py-1 rounded-xl text-xs font-medium bg-green-100 text-green-800">Publish</span>
+              {% elif p.status == 'draft' %}
+                <span class="px-2 py-1 rounded-xl text-xs font-medium bg-yellow-100 text-yellow-800">Draft</span>
+              {% else %}
+                <span class="px-2 py-1 rounded-xl text-xs font-medium bg-red-100 text-red-800">Trash</span>
+              {% endif %}
+            </td>
+            <td class="py-3">
+              <div class="flex items-center gap-2">
+                <a class="px-3 py-2 rounded-2xl text-sm font-medium bg-gray-100 hover:bg-gray-200 border"
+                   href="{% url 'articles:edit' p.id %}">Edit</a>
+                <button data-id="{{p.id}}"
+                        class="trash-btn px-3 py-2 rounded-2xl text-sm font-medium bg-red-600 text-white hover:bg-red-700">
+                  Trash
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="py-8 text-center text-gray-500">No data</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination (limit/offset) -->
+    <div class="mt-4 flex items-center justify-between">
+      <form method="get" class="flex items-center gap-2">
+        <input type="hidden" name="tab" value="{{tab}}">
+        <label class="text-sm text-gray-500">Limit</label>
+        <input class="border rounded-xl px-2 py-1 w-20" type="number" name="limit" value="{{limit}}" min="1" max="100">
+        <input type="hidden" name="offset" value="{{prev_offset}}">
+        <button class="px-3 py-2 rounded-2xl text-sm font-medium bg-gray-100 border">Apply</button>
+      </form>
+
+      <div class="flex gap-2">
+        <a class="px-3 py-2 rounded-2xl text-sm bg-gray-100 border
+                  {% if offset == 0 %}pointer-events-none opacity-50{% endif %}"
+           href="?tab={{tab}}&limit={{limit}}&offset={{prev_offset}}">Prev</a>
+
+        <a class="px-3 py-2 rounded-2xl text-sm bg-gray-100 border
+                  {% if next_offset >= count %}pointer-events-none opacity-50{% endif %}"
+           href="?tab={{tab}}&limit={{limit}}&offset={{next_offset}}">Next</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="trashModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full">
+      <h3 class="text-lg font-semibold mb-2">Pindahkan ke Trash?</h3>
+      <p class="text-sm text-gray-600 mb-4">Artikel akan berpindah ke tab <strong>Trashed</strong>.</p>
+      <form id="trashForm" method="post" action="">
+        {% csrf_token %}
+        <div class="flex justify-end gap-2">
+          <button type="button" id="cancelTrash" class="px-3 py-2 rounded-2xl text-sm bg-gray-100 border">Batal</button>
+          <button type="submit" class="px-3 py-2 rounded-2xl text-sm bg-red-600 text-white">Ya, Trash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const modal = document.getElementById('trashModal');
+  const cancel = document.getElementById('cancelTrash');
+  const form = document.getElementById('trashForm');
+  document.querySelectorAll('.trash-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      form.action = "{% url 'articles:trash' 0 %}".replace('/0/', `/${btn.dataset.id}/`);
+      modal.classList.remove('hidden');
+    });
+  });
+  cancel.addEventListener('click', ()=> modal.classList.add('hidden'));
+  modal.addEventListener('click', (e)=> { if(e.target===modal) modal.classList.add('hidden'); });
+</script>
+{% endblock %}

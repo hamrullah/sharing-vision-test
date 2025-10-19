@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Sharing Vision{% endblock %}</title>
+
+  <!-- Tailwind CDN + theme tweak -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { DEFAULT: '#2563eb', dark: '#1e40af', 50:'#eff6ff' }
+          },
+          boxShadow: {
+            'soft': '0 10px 25px -10px rgba(0,0,0,.08)'
+          },
+          borderRadius: { 'xxl': '1.25rem' }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-800">
+  {% url 'articles:all_posts' as url_all %}
+  {% url 'articles:add_new' as url_add %}
+  {% url 'articles:preview' as url_prev %}
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 border-b bg-white/80 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-5">
+      <div class="h-16 flex items-center gap-6">
+        <a href="{{ url_all }}" class="text-2xl font-black tracking-tight">Sharing <span class="text-brand">Vision</span></a>
+
+        <nav class="ml-2 flex items-center gap-1 rounded-full bg-slate-100 p-1">
+          <a href="{{ url_all }}"
+             class="px-4 py-2 rounded-full text-sm font-medium transition
+                    {% if request.path == url_all or request.path|slice:':10' == '/dashboard' %}
+                      bg-white shadow-soft text-slate-900
+                    {% else %} text-slate-600 hover:text-slate-900 {% endif %}">
+            All Posts
+          </a>
+          <a href="{{ url_add }}"
+             class="px-4 py-2 rounded-full text-sm font-medium transition
+                    {% if request.path == url_add %} bg-white shadow-soft text-slate-900
+                    {% else %} text-slate-600 hover:text-slate-900 {% endif %}">
+            Add New
+          </a>
+          <a href="{{ url_prev }}"
+             class="px-4 py-2 rounded-full text-sm font-medium transition
+                    {% if request.path == url_prev %} bg-white shadow-soft text-slate-900
+                    {% else %} text-slate-600 hover:text-slate-900 {% endif %}">
+            Preview
+          </a>
+        </nav>
+
+        <div class="ml-auto hidden md:flex items-center gap-3 text-xs text-slate-500">
+          <span class="px-2 py-1 rounded-full bg-slate-100 border">Django Template</span>
+          <span class="px-2 py-1 rounded-full bg-blue-50 text-brand border border-blue-100">Tailwind</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="max-w-7xl mx-auto px-5 py-8">
+    {% if messages %}
+      <div class="mb-4 space-y-2">
+        {% for m in messages %}
+          <div class="px-4 py-3 rounded-2xl text-sm shadow-soft border
+                      {% if m.tags == 'error' %} bg-red-50 text-red-800 border-red-100
+                      {% elif m.tags == 'success' %} bg-green-50 text-green-800 border-green-100
+                      {% else %} bg-slate-50 text-slate-700 border-slate-200 {% endif %}">
+            {{ m }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

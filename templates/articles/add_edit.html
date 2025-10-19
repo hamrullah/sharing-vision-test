@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == 'add' %}Add New{% else %}Edit{% endif %}{% endblock %}
+{% block content %}
+
+<div class="max-w-3xl mx-auto bg-white rounded-xxl shadow-soft border p-6">
+  <h1 class="text-xl font-semibold mb-1">{% if mode == 'add' %}Add New{% else %}Edit{% endif %}</h1>
+  <p class="text-sm text-slate-500 mb-5">Isi judul, konten, dan kategori. Pilih Publish atau Draft.</p>
+
+  <form method="post" id="postForm" class="space-y-5">
+    {% csrf_token %}
+    <div>
+      <label class="text-sm font-medium">Title</label>
+      {{ form.title }}
+      {% if form.title.errors %}<p class="text-rose-600 text-sm mt-1">{{ form.title.errors.0 }}</p>{% endif %}
+    </div>
+    <div>
+      <label class="text-sm font-medium">Content</label>
+      {{ form.content }}
+      {% if form.content.errors %}<p class="text-rose-600 text-sm mt-1">{{ form.content.errors.0 }}</p>{% endif %}
+    </div>
+    <div>
+      <label class="text-sm font-medium">Category</label>
+      {{ form.category }}
+      {% if form.category.errors %}<p class="text-rose-600 text-sm mt-1">{{ form.category.errors.0 }}</p>{% endif %}
+    </div>
+
+    <div class="hidden">{{ form.status }}</div>
+    <input type="hidden" name="action_status" id="action_status" value="">
+
+    <div class="flex gap-2">
+      <button type="button" data-status="publish" class="px-4 py-2 rounded-full text-sm font-semibold bg-brand text-white hover:bg-brand-dark">Publish</button>
+      <button type="button" data-status="draft" class="px-4 py-2 rounded-full text-sm font-semibold bg-white border hover:bg-slate-100">Draft</button>
+    </div>
+  </form>
+</div>
+
+<!-- Modal -->
+<div id="confirmModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-xxl p-6 w-full max-w-sm shadow-soft border">
+    <h3 class="text-lg font-semibold mb-1">Simpan artikel ini?</h3>
+    <p class="text-sm text-slate-600">Pastikan melebihi batas minimal karakter.</p>
+    <div class="mt-5 flex justify-end gap-2">
+      <button type="button" id="cancelConfirm" class="px-4 py-2 rounded-full text-sm bg-white border hover:bg-slate-100">Batal</button>
+      <button type="button" id="okConfirm" class="px-4 py-2 rounded-full text-sm bg-brand text-white hover:bg-brand-dark">Simpan</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const modal = document.getElementById('confirmModal');
+  const okBtn = document.getElementById('okConfirm');
+  const cancelBtn = document.getElementById('cancelConfirm');
+  const form = document.getElementById('postForm');
+  const actionStatus = document.getElementById('action_status');
+
+  function openModal(){ modal.classList.remove('hidden'); }
+  function closeModal(){ modal.classList.add('hidden'); }
+  function valid(){ return form.reportValidity(); }
+
+  document.querySelectorAll('button[data-status]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      actionStatus.value = btn.dataset.status;
+      if (!valid()) return;
+      openModal();
+      okBtn.onclick = ()=> form.submit();
+    });
+  });
+  cancelBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e)=> { if(e.target===modal) closeModal(); });
+</script>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Preview{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-1">Preview</h1>
+<p class="text-sm text-slate-500 mb-5">Menampilkan artikel berstatus Publish.</p>
+
+<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+  {% for p in page_obj.object_list %}
+  <article class="bg-white border rounded-xxl shadow-soft p-5 hover:shadow-md transition">
+    <div class="text-xs text-slate-500 mb-2">{{ p.created_date|date:"d M Y" }}</div>
+    <h3 class="font-semibold text-lg leading-tight mb-2 line-clamp-2">{{ p.title }}</h3>
+    <p class="text-sm text-slate-600 line-clamp-4">{{ p.content }}</p>
+    <div class="mt-4 flex items-center justify-between">
+      <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-100">Publish</span>
+      <span class="text-xs text-slate-500">{{ p.category }}</span>
+    </div>
+  </article>
+  {% empty %}
+  <p class="col-span-full text-slate-500">Tidak ada artikel publish.</p>
+  {% endfor %}
+</div>
+
+<div class="mt-6 flex items-center justify-between">
+  <span class="text-sm text-slate-500">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+  <div class="flex gap-2">
+    {% if page_obj.has_previous %}
+      <a class="px-4 py-1.5 rounded-full text-sm bg-white border hover:bg-slate-100" href="?page={{ page_obj.previous_page_number }}&limit={{ limit }}">Prev</a>
+    {% else %}
+      <span class="px-4 py-1.5 rounded-full text-sm bg-slate-100 border opacity-50">Prev</span>
+    {% endif %}
+    {% if page_obj.has_next %}
+      <a class="px-4 py-1.5 rounded-full text-sm bg-white border hover:bg-slate-100" href="?page={{ page_obj.next_page_number }}&limit={{ limit }}">Next</a>
+    {% else %}
+      <span class="px-4 py-1.5 rounded-full text-sm bg-slate-100 border opacity-50">Next</span>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
